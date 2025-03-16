@@ -6,113 +6,105 @@
  */
 
 import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createStackNavigator} from '@react-navigation/stack';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+// Ekrany – zastąp przykładowe komponenty własnymi implementacjami
+import AllSetsScreen from './screens/AllSetsScreen';
+import LearningScreen from './screens/LearningScreen';
+import CustomSetsScreen from './screens/CustomSetsScreen';
+import AddSetScreen from './screens/AddSetScreen';
+import EditSetScreen from './screens/EditSetScreen';
+import StatsScreen from './screens/StatsScreen';
+import { Text } from "react-native";
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const AllSetsStack = createStackNavigator();
+const CustomSetsStack = createStackNavigator();
+const StatsStack = createStackNavigator();
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+function AllSetsNavigator() {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <AllSetsStack.Navigator>
+      <AllSetsStack.Screen
+        name="AllSets"
+        component={AllSetsScreen}
+        options={{title: 'Wszystkie zestawy'}}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <AllSetsStack.Screen
+        name="Learning"
+        component={LearningScreen}
+        options={{title: 'Nauka przez pisanie'}}
+      />
+    </AllSetsStack.Navigator>
   );
 }
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+function CustomSetsNavigator() {
+  return (
+    <CustomSetsStack.Navigator>
+      <CustomSetsStack.Screen
+        name="CustomSets"
+        component={CustomSetsScreen}
+        options={{title: 'Własne zestawy'}}
+      />
+      <CustomSetsStack.Screen
+        name="AddSet"
+        component={AddSetScreen}
+        options={{title: 'Dodaj zestaw'}}
+      />
+      <CustomSetsStack.Screen
+        name="EditSet"
+        component={EditSetScreen}
+        options={{title: 'Edytuj zestaw'}}
+      />
+    </CustomSetsStack.Navigator>
+  );
+}
 
-export default App;
+function StatsNavigator() {
+  return (
+    <StatsStack.Navigator>
+      <StatsStack.Screen
+        name="Stats"
+        component={StatsScreen}
+        options={{title: 'Statystyki i ustawienia'}}
+      />
+    </StatsStack.Navigator>
+  );
+}
+
+const Tab = createBottomTabNavigator();
+
+export default function App() {
+  return (
+    // <Text>Test</Text>
+    <NavigationContainer>
+      <Tab.Navigator>
+        <Tab.Screen name="Wszystkie zestawy" component={AllSetsNavigator} />
+        <Tab.Screen name="Własne zestawy" component={CustomSetsNavigator} />
+        <Tab.Screen name="Statystyki" component={StatsNavigator} />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+}
+
+// const styles = StyleSheet.create({
+//   sectionContainer: {
+//     marginTop: 32,
+//     paddingHorizontal: 24,
+//   },
+//   sectionTitle: {
+//     fontSize: 24,
+//     fontWeight: '600',
+//   },
+//   sectionDescription: {
+//     marginTop: 8,
+//     fontSize: 18,
+//     fontWeight: '400',
+//   },
+//   highlight: {
+//     fontWeight: '700',
+//   },
+// });
+
