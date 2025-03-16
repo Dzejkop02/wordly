@@ -8,7 +8,10 @@ const CustomSetsStack = createStackNavigator();
 
 export default function CustomSetsNavigator() {
   return (
-    <CustomSetsStack.Navigator>
+    <CustomSetsStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
       <CustomSetsStack.Screen
         name="CustomSets"
         component={CustomSetsScreen}

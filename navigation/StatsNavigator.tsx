@@ -6,7 +6,10 @@ const StatsStack = createStackNavigator();
 
 export default function StatsNavigator() {
   return (
-    <StatsStack.Navigator>
+    <StatsStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
       <StatsStack.Screen
         name="Stats"
         component={StatsScreen}

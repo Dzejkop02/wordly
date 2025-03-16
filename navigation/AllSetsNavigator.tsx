@@ -7,7 +7,10 @@ const AllSetsStack = createStackNavigator();
 
 export default function AllSetsNavigator() {
   return (
-    <AllSetsStack.Navigator>
+    <AllSetsStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
       <AllSetsStack.Screen
         name="AllSets"
         component={AllSetsScreen}
