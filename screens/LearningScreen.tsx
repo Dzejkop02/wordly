@@ -1,8 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, TextInput} from 'react-native';
 
-export default function LearningScreen() {
-  return <Text>--- Ekran nauki ---</Text>;
+export default function LearningScreen({route}) {
+  const {setId} = route.params;
+
+  return <Text>--- Ekran nauki --- {setId}</Text>;
 }
 
 // export default function LearningScreen({route}) {

@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
+import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -14,12 +14,21 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import AllSetsNavigator from './navigation/AllSetsNavigator';
 import CustomSetsNavigator from './navigation/CustomSetsNavigator';
 import StatsNavigator from './navigation/StatsNavigator';
+import StatsScreen from './screens/StatsScreen';
 
 const Tab = createBottomTabNavigator();
 
+const MyTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: '#1a3b45',
+  },
+};
+
 export default function App() {
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={MyTheme}>
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
@@ -65,8 +74,8 @@ export default function App() {
           }}
         />
         <Tab.Screen
-          name="Statystyki"
-          component={StatsNavigator}
+          name="Statystyki i ustawienia"
+          component={StatsScreen}
           options={{
             tabBarIcon: ({size, focused, color}) => {
               return <Ionicons name="person" size={size} color={color} />;

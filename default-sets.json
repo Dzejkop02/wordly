@@ -1,0 +1,136 @@
+[
+  {
+    "id": "animals",
+    "name": "Gatunki zwierząt",
+    "isCustom": false,
+    "words": [
+      {
+        "id": "dog",
+        "source": "Dog",
+        "translation": "Pies"
+      },
+      {
+        "id": "cat",
+        "source": "Cat",
+        "translation": "Kot"
+      },
+      {
+        "id": "elephant",
+        "source": "Elephant",
+        "translation": "Słoń"
+      },
+      {
+        "id": "lion",
+        "source": "Lion",
+        "translation": "Lew"
+      },
+      {
+        "id": "giraffe",
+        "source": "Giraffe",
+        "translation": "Żyrafa"
+      },
+      {
+        "id": "dolphin",
+        "source": "Dolphin",
+        "translation": "Delfin"
+      },
+      {
+        "id": "penguin",
+        "source": "Penguin",
+        "translation": "Pingwin"
+      },
+      {
+        "id": "kangaroo",
+        "source": "Kangaroo",
+        "translation": "Kangur"
+      },
+      {
+        "id": "tiger",
+        "source": "Tiger",
+        "translation": "Tygrys"
+      },
+      {
+        "id": "zebra",
+        "source": "Zebra",
+        "translation": "Zebra"
+      },
+      {
+        "id": "bear",
+        "source": "Bear",
+        "translation": "Niedźwiedź"
+      },
+      {
+        "id": "wolf",
+        "source": "Wolf",
+        "translation": "Wilk"
+      }
+    ]
+  },
+  {
+    "id": "technology",
+    "name": "Technologia",
+    "isCustom": false,
+    "words": [
+      {
+        "id": "computer",
+        "source": "Computer",
+        "translation": "Komputer"
+      },
+      {
+        "id": "smartphone",
+        "source": "Smartphone",
+        "translation": "Smartfon"
+      },
+      {
+        "id": "software",
+        "source": "Software",
+        "translation": "Oprogramowanie"
+      },
+      {
+        "id": "hardware",
+        "source": "Hardware",
+        "translation": "Sprzęt komputerowy"
+      },
+      {
+        "id": "internet",
+        "source": "Internet",
+        "translation": "Internet"
+      },
+      {
+        "id": "algorithm",
+        "source": "Algorithm",
+        "translation": "Algorytm"
+      },
+      {
+        "id": "programming",
+        "source": "Programming",
+        "translation": "Programowanie"
+      },
+      {
+        "id": "cybersecurity",
+        "source": "Cybersecurity",
+        "translation": "Cyberbezpieczeństwo"
+      },
+      {
+        "id": "ai",
+        "source": "Artificial Intelligence",
+        "translation": "Sztuczna inteligencja"
+      },
+      {
+        "id": "robotics",
+        "source": "Robotics",
+        "translation": "Robotyka"
+      },
+      {
+        "id": "blockchain",
+        "source": "Blockchain",
+        "translation": "Blockchain"
+      },
+      {
+        "id": "vr",
+        "source": "Virtual Reality",
+        "translation": "Wirtualna rzeczywistość"
+      }
+    ]
+  }
+]
