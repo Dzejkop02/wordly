@@ -1,7 +1,7 @@
 [
   {
     "id": "animals",
-    "name": "Gatunki zwierząt",
+    "name": "🐒 Gatunki zwierząt",
     "isCustom": false,
     "words": [
       {
@@ -68,7 +68,7 @@
   },
   {
     "id": "technology",
-    "name": "Technologia",
+    "name": "💻 Technologia",
     "isCustom": false,
     "words": [
       {

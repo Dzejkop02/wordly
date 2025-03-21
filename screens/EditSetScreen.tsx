@@ -1,8 +1,10 @@
 import React, {useState} from 'react';
 import {View, TextInput, Button, Text} from 'react-native';
 
-export default function EditSetScreen() {
-  return <Text>--- Ekran dodawania / edycji ---</Text>;
+export default function EditSetScreen({route, navigation}) {
+  const {setId} = route.params;
+
+  return <Text>--- Ekran dodawania / edycji --- {setId}</Text>;
 }
 
 // export default function EditSetScreen({route, navigation}) {

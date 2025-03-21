@@ -1,24 +1,47 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-  FlatList,
   TouchableOpacity,
   View,
   Text,
   ScrollView,
   StyleSheet,
-  TextInput, Dimensions
+  TextInput,
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import DefaultSets from '../default-sets.json';
 import Header from '../components/Header';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import DefaultSets from '../default-sets.json';
 
 export default function AllSetsScreen({navigation}) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [allSets, setAllSets] = useState([...DefaultSets]);
 
+  // Wczytuje zestawy użytkownika z AsyncStorage
+  useEffect(() => {
+    const fetchUserSets = async () => {
+      try {
+        const storedSets = await AsyncStorage.getItem('customSets');
+        if (storedSets) {
+          const parsedSets = JSON.parse(storedSets);
+          const combined = [...DefaultSets, ...parsedSets];
+          setAllSets(combined);
+        } else {
+          setAllSets([...DefaultSets]);
+        }
+      } catch (error) {
+        console.log('Błąd podczas wczytywania zestawów użytkownika:', error);
+      }
+    };
+
+    fetchUserSets();
+  }, []);
+
+  // Filtrowanie
   const filteredSets =
     searchQuery.trim() === ''
-      ? DefaultSets
-      : DefaultSets.filter(set =>
+      ? allSets
+      : allSets.filter(set =>
           set.name.toLowerCase().includes(searchQuery.toLowerCase()),
         );
 
@@ -36,9 +59,10 @@ export default function AllSetsScreen({navigation}) {
         />
       </View>
 
-      <Text style={styles.greetingText}>Witaj ponownie !!</Text>
+      <Text style={styles.greetingText}>Powtórz słówka !!</Text>
 
       <Text style={styles.setHeading}>Przeglądaj zbiory</Text>
+
       <ScrollView>
         {filteredSets.map(set => (
           <TouchableOpacity
@@ -99,24 +123,3 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 });
-
-// export default function AllSetsScreen({navigation}) {
-//   const [sets, setSets] = useState([...predefinedSets, ...userSets]);
-//
-//   const renderItem = ({item}) => (
-//     <TouchableOpacity
-//       style={styles.setItem}
-//       onPress={() => navigation.navigate('Learning', {set: item})}>
-//       <Text style={styles.setTitle}>{item.name}</Text>
-//       <Text>{item.words.length} słów</Text>
-//     </TouchableOpacity>
-//   );
-//
-//   return (
-//     <FlatList
-//       data={sets}
-//       renderItem={renderItem}
-//       keyExtractor={item => item.id}
-//     />
-//   );
-// }

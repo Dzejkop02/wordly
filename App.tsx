@@ -6,14 +6,13 @@
  */
 
 import React from 'react';
-import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
+import {DefaultTheme, NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import AllSetsNavigator from './navigation/AllSetsNavigator';
 import CustomSetsNavigator from './navigation/CustomSetsNavigator';
-import StatsNavigator from './navigation/StatsNavigator';
 import StatsScreen from './screens/StatsScreen';
 
 const Tab = createBottomTabNavigator();
