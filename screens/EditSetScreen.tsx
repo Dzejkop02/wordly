@@ -1,30 +1,323 @@
-import React, {useState} from 'react';
-import {View, TextInput, Button, Text} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  TouchableOpacity,
+} from 'react-native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Header from '../components/Header';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import uuid from 'uuid-random';
 
 export default function EditSetScreen({route, navigation}) {
   const {setId} = route.params;
+  const [setTitle, setSetTitle] = useState('');
+  const [rows, setRows] = useState([]);
+  const MAX_ROWS = 15;
 
-  return <Text>--- Ekran dodawania / edycji --- {setId}</Text>;
+  // Pomocnicza funkcja licząca liczbę wierszy typed
+  const getTypedRowsCount = list => list.filter(row => row.typed).length;
+
+  // Ładowanie istniejącego zestawu z AsyncStorage
+  useEffect(() => {
+    const loadSet = async () => {
+      try {
+        const storedSets = await AsyncStorage.getItem('customSets');
+        if (!storedSets) {
+          // Brak jakichkolwiek zestawów - nic nie ładujemy
+          return;
+        }
+        const allSets = JSON.parse(storedSets);
+        // Szukamy zestawu o zadanym id
+        const existingSet = allSets.find(s => s.id === setId);
+        if (!existingSet) {
+          // Nie znaleziono
+          return;
+        }
+        setSetTitle(existingSet.name);
+        const loadedRows = existingSet.words.map(word => ({
+          id: word.id,
+          left: word.source,
+          right: word.translation,
+          typed: true,
+        }));
+
+        const typedCount = getTypedRowsCount(loadedRows);
+        if (typedCount < MAX_ROWS) {
+          loadedRows.push({
+            id: Date.now(),
+            left: '',
+            right: '',
+            typed: false,
+          });
+        }
+
+        setRows(loadedRows);
+      } catch (error) {
+        console.log('Błąd przy ładowaniu zestawu:', error);
+      }
+    };
+
+    loadSet();
+  }, [setId]);
+
+  // Obsługa wpisywania w wierszu
+  const handleChangeText = (index, side, text) => {
+    const updated = [...rows];
+    const row = updated[index];
+
+    row[side] = text;
+    const hasAnyValue = row.left.trim() !== '' || row.right.trim() !== '';
+    row.typed = hasAnyValue;
+
+    // Dodawanie nowego wiersza, jeśli wypełniono ostatni i nie osiągnięto limitu
+    if (hasAnyValue && index === updated.length - 1) {
+      const typedCount = getTypedRowsCount(updated);
+      if (typedCount < MAX_ROWS) {
+        updated.push({
+          id: Date.now() + 1,
+          left: '',
+          right: '',
+          typed: false,
+        });
+      }
+    }
+
+    setRows(updated);
+  };
+
+  // Usuwanie wybranego wiersza
+  const removeRow = index => {
+    const updated = [...rows];
+    updated.splice(index, 1);
+
+    // Jeśli wszystko usunięte, dodaj jeden pusty
+    if (updated.length === 0) {
+      updated.push({
+        id: Date.now(),
+        left: '',
+        right: '',
+        typed: false,
+      });
+    }
+
+    // Jeśli usunęliśmy wiersz typed, sprawdzamy limit i ewentualnie dodajemy placeholder
+    const typedCount = getTypedRowsCount(updated);
+    if (typedCount < MAX_ROWS) {
+      const lastRow = updated[updated.length - 1];
+      if (lastRow.typed) {
+        updated.push({
+          id: Date.now() + 2,
+          left: '',
+          right: '',
+          typed: false,
+        });
+      }
+    }
+
+    setRows(updated);
+  };
+
+  // Dynamicznie zwraca styl tła (białe lub półprzezroczyste), zależnie od tego, czy pole jest puste
+  const getContainerDynamicStyle = value => ({
+    backgroundColor: value.trim() === '' ? 'rgba(255,255,255,0.5)' : '#fff',
+  });
+
+  // Funkcja aktualizująca (nadpisująca) istniejący zestaw w AsyncStorage
+  const handleSaveSet = async () => {
+    try {
+      // 1. Pobierz istniejące zestawy
+      const storedSets = await AsyncStorage.getItem('customSets');
+      if (!storedSets) {
+        // nie powinno się zdarzyć
+        return;
+      }
+      const sets = JSON.parse(storedSets);
+
+      // 2. Znajdź zestaw o danym id i go zaktualizuj
+      const index = sets.findIndex(s => s.id === setId);
+      if (index === -1) {
+        // Brak takiego zestawu
+        return;
+      }
+
+      // Zbuduj nową wersję zestawu
+      sets[index].name = setTitle || 'Własny zestaw 💪';
+      sets[index].isCustom = true;
+      sets[index].words = rows
+        .filter(row => row.typed)
+        .map(row => ({
+          id: row.id || uuid(),
+          source: row.left,
+          translation: row.right,
+        }));
+
+      // 3. Zapisz zaktualizowaną tablicę w AsyncStorage
+      await AsyncStorage.setItem('customSets', JSON.stringify(sets));
+
+      // 4. Przechodzimy do ekranu CustomSets
+      navigation.navigate('CustomSets');
+    } catch (error) {
+      console.error('Błąd przy aktualizacji zestawu:', error);
+    }
+  };
+
+  return (
+    <View style={{flex: 1}}>
+      <Header />
+
+      <View style={styles.centeredContainer}>
+        <Text style={styles.greetingText}>Edytuj Zbiór</Text>
+
+        {/* Ikona ZAPISU */}
+        <TouchableOpacity onPress={handleSaveSet}>
+          <MaterialIcons
+            name="save"
+            size={45}
+            color="#e44645"
+            style={styles.iconSpacing}
+          />
+        </TouchableOpacity>
+
+        {/* Ikona X – powrót do ekranu CustomSets */}
+        <TouchableOpacity onPress={() => navigation.navigate('CustomSets')}>
+          <MaterialCommunityIcons
+            name="close-box"
+            size={45}
+            color="white"
+            style={styles.iconSpacing}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Input na nazwę zestawu */}
+      <View style={styles.titleSetContainer}>
+        <TextInput
+          style={styles.titleSet}
+          placeholder="Nazwa zbioru"
+          placeholderTextColor="#aaa"
+          value={setTitle}
+          onChangeText={text => setSetTitle(text)}
+        />
+      </View>
+
+      <ScrollView contentContainerStyle={styles.wordsContainer}>
+        {rows.map((row, index) => (
+          <View key={row.id} style={styles.row}>
+            {/* Kontener pierwszego inputu */}
+            <View
+              style={[
+                styles.wordInputContainer,
+                getContainerDynamicStyle(row.left),
+              ]}>
+              <TextInput
+                style={styles.wordInput}
+                placeholder="Słówko"
+                placeholderTextColor="#888"
+                value={row.left}
+                onChangeText={text => handleChangeText(index, 'left', text)}
+              />
+            </View>
+
+            {/* Kontener drugiego inputu */}
+            <View
+              style={[
+                styles.wordInputContainer,
+                getContainerDynamicStyle(row.right),
+                {marginRight: 0},
+              ]}>
+              <TextInput
+                style={styles.wordInput}
+                placeholder="Tłumaczenie (PL)"
+                placeholderTextColor="#888"
+                value={row.right}
+                onChangeText={text => handleChangeText(index, 'right', text)}
+              />
+            </View>
+
+            {/* Stałe miejsce na ikonę X */}
+            <View style={styles.iconContainer}>
+              {row.typed && (
+                <TouchableOpacity onPress={() => removeRow(index)}>
+                  <MaterialCommunityIcons
+                    name="close-box"
+                    size={30}
+                    color="#e44645"
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
 }
 
-// export default function EditSetScreen({route, navigation}) {
-//   const [name, setName] = useState(route.params?.set?.name || '');
-//   const [words, setWords] = useState(route.params?.set?.words || []);
-//
-//   const saveSet = () => {
-//     // Logika zapisywania do stanu/AsyncStorage
-//     navigation.goBack();
-//   };
-//
-//   return (
-//     <View style={styles.container}>
-//       <TextInput
-//         placeholder="Nazwa zestawu"
-//         value={name}
-//         onChangeText={setName}
-//       />
-//       {/* Komponent do dodawania słówek */}
-//       <Button title="Zapisz" onPress={saveSet} />
-//     </View>
-//   );
-// }
+const styles = StyleSheet.create({
+  centeredContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 15,
+    marginBottom: 30,
+  },
+  greetingText: {
+    fontSize: 34,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  iconSpacing: {
+    marginLeft: 10,
+  },
+  titleSetContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: Dimensions.get('window').width - 20,
+    paddingHorizontal: 15,
+    alignSelf: 'center',
+    marginVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  titleSet: {
+    flex: 1,
+    fontSize: 20,
+    color: '#aaa',
+  },
+  wordsContainer: {
+    paddingHorizontal: 10,
+    paddingBottom: 20,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+    padding: 5,
+    backgroundColor: 'transparent',
+  },
+  wordInputContainer: {
+    flex: 1,
+    marginRight: 5,
+    borderRadius: 5,
+    borderBottomWidth: 2,
+    borderBottomColor: '#666',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  wordInput: {
+    color: '#000',
+    fontSize: 16,
+    padding: 0,
+  },
+  iconContainer: {
+    width: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
