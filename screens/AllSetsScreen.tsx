@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TextInput,
   Dimensions,
+  RefreshControl,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Header from '../components/Header';
@@ -16,26 +17,34 @@ import DefaultSets from '../default-sets.json';
 export default function AllSetsScreen({navigation}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [allSets, setAllSets] = useState([...DefaultSets]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Wczytuje zestawy użytkownika z AsyncStorage
-  useEffect(() => {
-    const fetchUserSets = async () => {
-      try {
-        const storedSets = await AsyncStorage.getItem('customSets');
-        if (storedSets) {
-          const parsedSets = JSON.parse(storedSets);
-          const combined = [...DefaultSets, ...parsedSets];
-          setAllSets(combined);
-        } else {
-          setAllSets([...DefaultSets]);
-        }
-      } catch (error) {
-        console.log('Błąd podczas wczytywania zestawów użytkownika:', error);
+  // Funkcja pobierająca zestawy użytkownika z AsyncStorage i łącząca je z DefaultSets
+  const fetchUserSets = async () => {
+    try {
+      const storedSets = await AsyncStorage.getItem('customSets');
+      if (storedSets) {
+        const parsedSets = JSON.parse(storedSets);
+        const combined = [...DefaultSets, ...parsedSets];
+        setAllSets(combined);
+      } else {
+        setAllSets([...DefaultSets]);
       }
-    };
+    } catch (error) {
+      console.log('Błąd podczas wczytywania zestawów użytkownika:', error);
+    }
+  };
 
+  // Ładujemy zestawy przy pierwszym uruchomieniu ekranu
+  useEffect(() => {
     fetchUserSets();
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchUserSets();
+    setRefreshing(false);
+  };
 
   // Filtrowanie
   const filteredSets =
@@ -60,10 +69,12 @@ export default function AllSetsScreen({navigation}) {
       </View>
 
       <Text style={styles.greetingText}>Powtórz słówka !!</Text>
-
       <Text style={styles.setHeading}>Przeglądaj zbiory</Text>
 
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
         {filteredSets.map(set => (
           <TouchableOpacity
             key={set.id}
