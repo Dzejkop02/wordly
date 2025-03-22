@@ -79,7 +79,7 @@ export default function AllSetsScreen({navigation}) {
           <TouchableOpacity
             key={set.id}
             style={styles.setContainer}
-            onPress={() => navigation.navigate('Learning', {setId: set.id})}>
+            onPress={() => navigation.navigate('Learning', {selectedSet: set})}>
             <Text style={styles.setText}>{set.name}</Text>
           </TouchableOpacity>
         ))}
