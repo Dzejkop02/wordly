@@ -1,11 +1,45 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Text, View, StyleSheet} from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import Header from '../components/Header';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function StatsScreen() {
+export default function StatsScreen({navigation}) {
   const [isChecked, setIsChecked] = useState(false);
+  const [dailyCount, setDailyCount] = useState(0);
+
+  const loadDailyStats = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const statsString = await AsyncStorage.getItem('dailyStats');
+      let stats;
+      if (statsString) {
+        stats = JSON.parse(statsString);
+        if (stats.date !== today) {
+          stats = {date: today, count: 0};
+          await AsyncStorage.setItem('dailyStats', JSON.stringify(stats));
+        }
+      } else {
+        stats = {date: today, count: 0};
+        await AsyncStorage.setItem('dailyStats', JSON.stringify(stats));
+      }
+      setDailyCount(stats.count);
+    } catch (error) {
+      console.error('Error loading daily stats', error);
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadDailyStats();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  useEffect(() => {
+    loadDailyStats();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -16,7 +50,7 @@ export default function StatsScreen() {
       <View style={styles.statsContainer}>
         <Text style={styles.statsText}>Powtórzyłeś dzisiaj</Text>
         <Text style={styles.statsText}>
-          <Text style={styles.numberText}>40</Text>{' '}
+          <Text style={styles.numberText}>{dailyCount}</Text>{' '}
           <Text style={styles.numberDescText}>słówek !!! </Text>
         </Text>
       </View>

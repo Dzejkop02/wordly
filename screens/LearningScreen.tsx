@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+
 import {
   View,
   Text,
@@ -9,6 +10,7 @@ import {
 
 import Header from '../components/Header';
 import LearningHeader from '../components/LearningHeader';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Funkcja tasująca
 function shuffleArray(array) {
@@ -57,7 +59,29 @@ export default function LearningScreen({route, navigation}) {
   const isSessionComplete = wordsToLearn.length === 0;
   const currentWord = !isSessionComplete ? wordsToLearn[0] : null;
 
-  const handleConfirm = () => {
+  // Funkcja aktualizująca licznik w AsyncStorage
+  const incrementDailyCount = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const statsString = await AsyncStorage.getItem('dailyStats');
+      let stats;
+      if (statsString) {
+        stats = JSON.parse(statsString);
+        if (stats.date !== today) {
+          stats = { date: today, count: 0 };
+        }
+      } else {
+        stats = { date: today, count: 0 };
+      }
+      stats.count += 1;
+      await AsyncStorage.setItem('dailyStats', JSON.stringify(stats));
+    } catch (error) {
+      console.error('Error updating daily stats', error);
+    }
+  };
+
+  // Zmodyfikowana funkcja handleConfirm
+  const handleConfirm = async () => {
     if (!currentWord) {
       return;
     }
@@ -66,6 +90,8 @@ export default function LearningScreen({route, navigation}) {
 
     if (userAnsNormalized === correctAnsNormalized) {
       setFeedback(currentWord.source);
+      // Zwiększamy licznik statystyk przy poprawnej odpowiedzi
+      await incrementDailyCount();
     } else {
       setFeedback(`Poprawna odpowiedź: ${currentWord.source}`);
       setIncorrectlyAnswered(prev => new Set([...prev, currentWord.id]));
@@ -181,9 +207,9 @@ export default function LearningScreen({route, navigation}) {
                   style={[
                     styles.feedbackText,
                     answerSubmitted &&
-                      (isAnswerCorrect
-                        ? {color: correctColor}
-                        : {color: wrongColor}),
+                    (isAnswerCorrect
+                      ? {color: correctColor}
+                      : {color: wrongColor}),
                   ]}>
                   {feedback}
                 </Text>
@@ -194,9 +220,9 @@ export default function LearningScreen({route, navigation}) {
               style={[
                 styles.answerInput,
                 answerSubmitted &&
-                  (isAnswerCorrect
-                    ? {color: correctColor, borderBottomColor: correctColor}
-                    : {color: wrongColor, borderBottomColor: wrongColor}),
+                (isAnswerCorrect
+                  ? {color: correctColor, borderBottomColor: correctColor}
+                  : {color: wrongColor, borderBottomColor: wrongColor}),
               ]}
               value={userAnswer}
               onChangeText={setUserAnswer}
