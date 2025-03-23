@@ -14,7 +14,7 @@ export default function Header() {
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

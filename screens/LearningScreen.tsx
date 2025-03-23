@@ -29,7 +29,6 @@ export default function LearningScreen({route, navigation}) {
   const [answerSubmitted, setAnswerSubmitted] = useState(false);
 
   const [totalWords, setTotalWords] = useState(0);
-  // Zbiór ID słówek, które były źle odpowiedziane co najmniej raz
   const [incorrectlyAnswered, setIncorrectlyAnswered] = useState(new Set());
 
   const [attemptedThisRound, setAttemptedThisRound] = useState(0);
@@ -39,16 +38,11 @@ export default function LearningScreen({route, navigation}) {
     if (!selectedSet || !selectedSet.words) {
       return;
     }
-
     const shuffled = shuffleArray(selectedSet.words);
-
-    // Nowa kolejka
     setWordsToLearn(shuffled);
     setTotalWords(shuffled.length);
-
     setWordsInCurrentRound(shuffled.length);
     setAttemptedThisRound(0);
-
     setIncorrectlyAnswered(new Set());
     setUserAnswer('');
     setFeedback('');
@@ -67,7 +61,6 @@ export default function LearningScreen({route, navigation}) {
     if (!currentWord) {
       return;
     }
-
     const userAnsNormalized = userAnswer.trim().toLowerCase();
     const correctAnsNormalized = currentWord.source.trim().toLowerCase();
 
@@ -80,23 +73,19 @@ export default function LearningScreen({route, navigation}) {
     setAnswerSubmitted(true);
   };
 
-  // Przejście do następnego słówka
   const handleNext = () => {
     if (!currentWord) {
       return;
     }
-
     const userAnsNormalized = userAnswer.trim().toLowerCase();
     const correctAnsNormalized = currentWord.source.trim().toLowerCase();
     const isCorrect = userAnsNormalized === correctAnsNormalized;
 
     let newQueue = [...wordsToLearn];
     newQueue.shift();
-
     if (!isCorrect) {
       newQueue.push(currentWord);
     }
-
     setWordsToLearn(newQueue);
     setUserAnswer('');
     setFeedback('');
@@ -106,7 +95,6 @@ export default function LearningScreen({route, navigation}) {
     setAttemptedThisRound(newAttemptCount);
 
     if (newAttemptCount === wordsInCurrentRound) {
-      // Runda zakończona
       if (newQueue.length > 0) {
         const shuffled = shuffleArray(newQueue);
         setWordsToLearn(shuffled);
@@ -116,13 +104,16 @@ export default function LearningScreen({route, navigation}) {
     }
   };
 
-  // Wyczyść odpowiedź
   const handleClear = () => {
     setUserAnswer('');
     setFeedback('');
   };
 
   const correctlyOnFirstTryCount = totalWords - incorrectlyAnswered.size;
+  const correctColor = '#658f8f';
+  const wrongColor = '#e54545';
+  const isAnswerCorrect =
+    answerSubmitted && !feedback.startsWith('Poprawna odpowiedź:');
 
   return (
     <View style={{flex: 1}}>
@@ -135,58 +126,107 @@ export default function LearningScreen({route, navigation}) {
         />
       )}
 
+      {/* Tytuł zbioru */}
+      <Text style={styles.setTitle}>{selectedSet?.name}</Text>
+
       <View style={styles.container}>
         {isSessionComplete ? (
-          <View style={{alignItems: 'center'}}>
+          <View style={styles.completeContainer}>
             <Text style={styles.doneText}>Koniec nauki! 🎉</Text>
-            <Text style={styles.doneText}>
+            <Text style={styles.resultText}>
               Trafiłeś {correctlyOnFirstTryCount} / {totalWords} słówek za
               pierwszym razem!
             </Text>
 
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={startNewSession}>
-              <Text style={styles.buttonText}>Spróbuj ponownie</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.backButton, {marginTop: 10}]}
-              onPress={() => navigation.navigate('AllSets')}>
-              <Text style={styles.buttonText}>Powrót</Text>
-            </TouchableOpacity>
+            <View style={styles.completeButtonsColumn}>
+              <TouchableOpacity
+                style={[styles.buttonPrimary, styles.halfButton]}
+                onPress={startNewSession}>
+                <Text style={styles.buttonText}>Spróbuj ponownie</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.buttonBack, styles.halfButton]}
+                onPress={() => navigation.navigate('AllSets')}>
+                <Text style={styles.buttonText}>Powrót</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <>
-            <Text style={styles.translationText}>
+            <Text
+              style={[
+                styles.translationText,
+                answerSubmitted && isAnswerCorrect && {color: correctColor},
+              ]}>
               {currentWord?.translation}
             </Text>
 
+            <View style={styles.feedbackContainer}>
+              {feedback.startsWith('Poprawna odpowiedź:') ? (
+                <>
+                  <Text style={[styles.feedbackText, {color: wrongColor}]}>
+                    Poprawna odpowiedź:
+                  </Text>
+                  <Text
+                    style={[
+                      styles.feedbackText,
+                      styles.bold,
+                      {color: wrongColor},
+                    ]}>
+                    {feedback.replace('Poprawna odpowiedź: ', '')}
+                  </Text>
+                </>
+              ) : (
+                <Text
+                  style={[
+                    styles.feedbackText,
+                    answerSubmitted &&
+                      (isAnswerCorrect
+                        ? {color: correctColor}
+                        : {color: wrongColor}),
+                  ]}>
+                  {feedback}
+                </Text>
+              )}
+            </View>
+
             <TextInput
-              style={styles.answerInput}
+              style={[
+                styles.answerInput,
+                answerSubmitted &&
+                  (isAnswerCorrect
+                    ? {color: correctColor, borderBottomColor: correctColor}
+                    : {color: wrongColor, borderBottomColor: wrongColor}),
+              ]}
               value={userAnswer}
               onChangeText={setUserAnswer}
               editable={!answerSubmitted}
+              placeholder="Wpisz słówko..."
+              placeholderTextColor="#ccc"
             />
 
-            {feedback !== '' && (
-              <Text style={styles.feedbackText}>{feedback}</Text>
-            )}
-
-            <View style={styles.buttonsRow}>
+            <View
+              style={[
+                styles.buttonsRow,
+                answerSubmitted && {justifyContent: 'center'},
+              ]}>
               {!answerSubmitted ? (
                 <>
-                  <TouchableOpacity style={styles.button} onPress={handleClear}>
+                  <TouchableOpacity
+                    style={styles.buttonClear}
+                    onPress={handleClear}>
                     <Text style={styles.buttonText}>Wyczyść</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.button}
+                    style={styles.buttonPrimary}
                     onPress={handleConfirm}>
                     <Text style={styles.buttonText}>Potwierdź</Text>
                   </TouchableOpacity>
                 </>
               ) : (
-                <TouchableOpacity style={styles.button} onPress={handleNext}>
+                <TouchableOpacity
+                  style={styles.buttonPrimary}
+                  onPress={handleNext}>
                   <Text style={styles.buttonText}>Dalej</Text>
                 </TouchableOpacity>
               )}
@@ -203,42 +243,18 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 40,
     alignItems: 'center',
-  },
-  translationText: {
-    fontSize: 28,
-    marginBottom: 20,
-    color: '#fff',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  answerInput: {
-    width: '80%',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    fontSize: 18,
-    padding: 10,
-    marginBottom: 10,
-  },
-  feedbackText: {
-    fontSize: 18,
-    marginTop: 10,
-    color: '#ffcc00',
-    textAlign: 'center',
-  },
-  buttonsRow: {
-    flexDirection: 'row',
-    marginTop: 20,
-  },
-  button: {
-    backgroundColor: '#e44645',
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginHorizontal: 10,
   },
-  buttonText: {
+  setTitle: {
+    fontSize: 24,
     color: '#fff',
-    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  completeContainer: {
+    alignItems: 'center',
+    width: '100%',
   },
   doneText: {
     fontSize: 22,
@@ -247,11 +263,80 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
   },
-  backButton: {
-    backgroundColor: '#666',
+  resultText: {
+    fontSize: 22,
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 100,
+  },
+  completeButtonsColumn: {
+    flexDirection: 'column',
+    width: '100%',
+  },
+  halfButton: {
+    width: '75%',
+    alignSelf: 'center',
+    marginVertical: 5,
+  },
+  translationText: {
+    fontSize: 42,
+    marginTop: 20,
+    marginBottom: 10,
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  feedbackContainer: {
+    minHeight: 30,
+    justifyContent: 'center',
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  feedbackText: {
+    fontSize: 24,
+    textAlign: 'center',
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  answerInput: {
+    width: '100%',
+    backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    borderBottomColor: '#fff',
+    fontSize: 22,
+    paddingVertical: 10,
+    marginBottom: 10,
+    color: '#fff',
+  },
+  buttonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 20,
+  },
+  buttonPrimary: {
+    backgroundColor: '#e54545',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
-    marginTop: 30,
+  },
+  buttonClear: {
+    backgroundColor: '#658f8f',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  buttonBack: {
+    backgroundColor: '#112c2c',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 20,
+    textAlign: 'center',
   },
 });
