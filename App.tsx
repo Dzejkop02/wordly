@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import {DefaultTheme, NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -14,6 +14,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import AllSetsNavigator from './navigation/AllSetsNavigator';
 import CustomSetsNavigator from './navigation/CustomSetsNavigator';
 import StatsScreen from './screens/StatsScreen';
+import SplashScreen from 'react-native-splash-screen';
 
 const Tab = createBottomTabNavigator();
 
@@ -26,6 +27,10 @@ const MyTheme = {
 };
 
 export default function App() {
+  useEffect(() => {
+    SplashScreen.hide();
+  });
+
   return (
     <NavigationContainer theme={MyTheme}>
       <Tab.Navigator
