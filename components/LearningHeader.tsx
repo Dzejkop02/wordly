@@ -1,19 +1,19 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import {useRegularity} from '../hooks/useRegularity';
 
 export default function LearningHeader({attempted, total}) {
-  const number = 100;
+  const regularity = useRegularity();
 
   return (
     <View style={styles.container}>
       <Text style={styles.wordlyText}>
         {attempted}/{total}
       </Text>
-
       <View style={styles.rightSection}>
         <Icon name="local-fire-department" size={32} color="#e44645" />
-        <Text style={styles.numberText}>{number}</Text>
+        <Text style={styles.numberText}>{regularity}</Text>
       </View>
     </View>
   );

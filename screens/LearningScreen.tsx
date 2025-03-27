@@ -68,10 +68,10 @@ export default function LearningScreen({route, navigation}) {
       if (statsString) {
         stats = JSON.parse(statsString);
         if (stats.date !== today) {
-          stats = { date: today, count: 0 };
+          stats = {date: today, count: 0};
         }
       } else {
-        stats = { date: today, count: 0 };
+        stats = {date: today, count: 0};
       }
       stats.count += 1;
       await AsyncStorage.setItem('dailyStats', JSON.stringify(stats));
@@ -79,6 +79,39 @@ export default function LearningScreen({route, navigation}) {
       console.error('Error updating daily stats', error);
     }
   };
+
+  const updateRegularityStat = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const regString = await AsyncStorage.getItem('regularityStats');
+      let regStat;
+      if (regString) {
+        regStat = JSON.parse(regString);
+        // Jeśli ostatni zapis jest już dzisiaj – nie robimy nic
+        if (regStat.date === today) return;
+        // Jeśli ostatni zapis był wczoraj – zwiększamy licznik
+        if (regStat.date === yesterday) {
+          regStat = { date: today, count: regStat.count + 1 };
+        } else {
+          // Brak regularności – resetujemy licznik
+          regStat = { date: today, count: 1 };
+        }
+      } else {
+        // Brak statystyki – inicjujemy ją
+        regStat = { date: today, count: 1 };
+      }
+      await AsyncStorage.setItem('regularityStats', JSON.stringify(regStat));
+    } catch (error) {
+      console.error('Error updating regularity stat', error);
+    }
+  };
+
+  useEffect(() => {
+    if (isSessionComplete) {
+      updateRegularityStat();
+    }
+  }, [isSessionComplete]);
 
   // Zmodyfikowana funkcja handleConfirm
   const handleConfirm = async () => {
@@ -207,9 +240,9 @@ export default function LearningScreen({route, navigation}) {
                   style={[
                     styles.feedbackText,
                     answerSubmitted &&
-                    (isAnswerCorrect
-                      ? {color: correctColor}
-                      : {color: wrongColor}),
+                      (isAnswerCorrect
+                        ? {color: correctColor}
+                        : {color: wrongColor}),
                   ]}>
                   {feedback}
                 </Text>
@@ -220,9 +253,9 @@ export default function LearningScreen({route, navigation}) {
               style={[
                 styles.answerInput,
                 answerSubmitted &&
-                (isAnswerCorrect
-                  ? {color: correctColor, borderBottomColor: correctColor}
-                  : {color: wrongColor, borderBottomColor: wrongColor}),
+                  (isAnswerCorrect
+                    ? {color: correctColor, borderBottomColor: correctColor}
+                    : {color: wrongColor, borderBottomColor: wrongColor}),
               ]}
               value={userAnswer}
               onChangeText={setUserAnswer}
